@@ -1,0 +1,12 @@
+# General
+.DS_Store
+.vscode/
+
+# Server Specific
+server/node_modules/
+server/.env
+
+# Client Specific
+client/node_modules/
+client/dist/
+client/.env
