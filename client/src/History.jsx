@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function History({ data = [] }) {
+export default function History({ data = [], onDelete }) {
   const [showAll, setShowAll]= useState(false)
 
   if (data.length === 0) return <p className="empty-msg">No history yet. Start focusing! 🚀</p>;
@@ -33,6 +33,7 @@ export default function History({ data = [] }) {
                 <span className="session-count">{day.logs?.length || 0} Entries</span>
                 <span className="count-badge">{day.totalCount}</span>
               </div>
+              <button className="btn-delete" onClick={() => onDelete(day._id)}>🗑️</button>
             </div>
           );
         })}

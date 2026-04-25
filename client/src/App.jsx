@@ -89,6 +89,27 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDeleteHistory = async (id) => {
+    if(!window.confirm("Brutal Check: Delete this day forever?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/logs/${id}`, {
+        method: "DELETE",
+        headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
+      });
+
+      if(res.ok) {
+        toast.success("Deleted! Stay focused now.");
+        fetchHistory() //Refresh the list from the server
+      }
+    } catch(err) {
+      toast.error("Delete failed!");
+    }
+  }
+
   return (
     <>
       <div className="MainContainer">
@@ -100,7 +121,7 @@ export default function App() {
           <Navbar user={user} onLogout={handleLogout} onReset={handleReset} onExport={handleExport}/>
           <Counter token={token} logs={logs} setLogs={setLogs} refreshHistory={fetchHistory}/>
 
-          <History data={history}/>
+          <History data={history} onDelete={handleDeleteHistory}/>
         </>
       )}
     </div>

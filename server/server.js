@@ -11,7 +11,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 // 1. The Security Guard (CORS) - Allows React to talk to Node
-app.use(cors({origin: "https://focus-tracker-kappa.vercel.app"}));
+app.use(cors({origin: ["http://localhost:5173", "https://focus-tracker-kappa.vercel.app"]}));
 app.use(express.json()); // Allows Node to read JSON data
 
 // 2. Database Connection
@@ -165,6 +165,22 @@ app.get("/api/load", auth, async (req, res) => {
   } catch(err) {
     res.status(500).json({message: "Server Error"})
   }
-});
+}); 
+
+// DELETE Route: For remove specific day from the history
+app.delete("/api/logs/:id", auth, async (req, res) => {
+  try {
+    const deleteDay = await DailySummary.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id
+    });
+
+    if(!deleteDay) return res.status(401).json({message: "Day not found!"});
+
+    res.status(200).json({message: "History cleared for that day! 🗑️"})
+  } catch(err) {
+    res.status(500).json({message: "Failed to delete history"})
+  }
+})
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
