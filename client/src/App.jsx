@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import "./App.css";
 
@@ -6,6 +7,7 @@ import Auth from "./components/Auth";
 import Navbar from "./components/Navbar";
 import Counter from "./components/Counter";
 import History from "./History";
+import Landing from "./pages/Landing";
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
@@ -22,13 +24,13 @@ export default function App() {
     try {
       const response = await fetch(`http://localhost:5000/api/logs`, {
         headers: {
-          Authorization: `Bearer ${token}`, // ✅ fix
+          Authorization: `Bearer ${token}`,
         },
       });
       const data = await response.json();
 
       if (response.ok) {
-        setHistory(data.reverse());
+        setHistory([...data].reverse());
       }
     } catch (err) {
       toast.error("History Fetching Failed!!");
@@ -63,6 +65,7 @@ export default function App() {
   }, [token]);
 
   const handleLogout = () => {
+    window.location.href = "/";
     localStorage.removeItem("token");
     localStorage.removeItem("myDistraction");
     setToken(null);
@@ -111,20 +114,40 @@ export default function App() {
   }
 
   return (
-    <>
-      <div className="MainContainer">
+  <Router>
+    <div className="MainContainer">
       <Toaster position="top-right" />
-      {!token ? (
-        <Auth setToken={setToken}/>
-      ) : (
-        <>
-          <Navbar user={user} onLogout={handleLogout} onReset={handleReset} onExport={handleExport}/>
-          <Counter token={token} logs={logs} setLogs={setLogs} refreshHistory={fetchHistory}/>
+      
+      <Routes>
+        {/* 1. Public Landing Page */}
+        <Route path="/" element={<Landing />} />
 
-          <History data={history} onDelete={handleDeleteHistory}/>
-        </>
-      )}
+        {/* 2. Login Page: If already logged in, skip to dashboard */}
+        <Route 
+          path="/login" 
+          element={!token ? <Auth setToken={setToken} /> : <Navigate to="/dashboard" />} 
+        />
+
+        {/* 3. The Private Dashboard: If NO token, kick them back to login */}
+        <Route 
+          path="/dashboard" 
+          element={
+            token ? (
+              <>
+                <Navbar user={user} onLogout={handleLogout} onReset={handleReset} onExport={handleExport}/>
+                <Counter token={token} logs={logs} setLogs={setLogs} refreshHistory={fetchHistory}/>
+                <History data={history} onDelete={handleDeleteHistory}/>
+              </>
+            ) : (
+              <Navigate to="/login" />
+            )
+          } 
+        />
+
+        {/* 4. Catch-all: Send any weird URL to the Landing page */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </div>
-    </>
-  );
+  </Router>
+);
 }

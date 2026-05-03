@@ -32,19 +32,28 @@ export default function Auth({ setToken }) {
   };
 
   return (
-    <div className="AuthBox">
-      <h2>{isLoginView ? "Login to Focus" : "Create Account"}</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        {/* Header Section */}
+        <div className="auth-header">
+          <h2>{isLoginView ? "Welcome Back" : "Join the Elite"}</h2>
+          <p>{isLoginView ? "Enter your credentials to access your dashboard." : "Start tracking your distractions today."}</p>
+        </div>
 
-      <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" />
-      <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Password" />
+        {/* Inputs */}
+        <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" />
+        <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Password" />
 
-      <button onClick={handleAuth}>
-        {isLoginView ? "Login 🚀" : "Register Me 📝"}
-      </button>
+        {/* Action Button */}
+        <button className="btn-auth" onClick={handleAuth}>
+          {isLoginView ? "Login 🚀" : "Register Me 📝"}
+        </button>
 
-      <p onClick={()=>setIsLoginView(!isLoginView)} style={{cursor: "pointer", color: "blue"}}>
-        {isLoginView ? "New here? Create account" : "Already have an account? Login"}
-      </p>
+        {/* Toggle View */}
+        <p className="auth-toggle" onClick={()=>setIsLoginView(!isLoginView)}>
+          {isLoginView ? "New here? Create account" : "Already have an account? Login"}
+        </p>
+      </div>
     </div>
   );
 }

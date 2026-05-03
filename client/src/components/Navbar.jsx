@@ -5,12 +5,12 @@ export default function Navbar({ user, onLogout, onReset, onExport }) {
 
   return (
     <nav className="navbar">
-      <h1>FocusTracker</h1>
+      <div className="logo">Focus<span>Tracker</span></div>
       <div className="user-info">
-        <span>Welcome, <strong>{user?.email?.split('@')[0] || "Explorer"}</strong></span>
+        <span>Active Session: <strong>{(user?.email?.split('@')[0] || "Explorer").toUpperCase()}</strong></span>
 
         <div className="menu-container">
-          <button onClick={() => setShowMenu(!showMenu)} className="dot-btn">⋮</button>
+          <button onClick={() => setShowMenu(!showMenu)} className="three-dot-btn">⋮</button>
           {showMenu && (
             <div className="dropdown-menu">
               <button onClick={() => { onExport(); setShowMenu(false); }}>Export JSON 📥</button>

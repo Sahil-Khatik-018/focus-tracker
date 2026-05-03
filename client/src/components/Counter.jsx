@@ -20,8 +20,27 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
 
 
   const streak = useMemo(() => {
-    return logs.length === 0 ? "🔥 Perfect Day" : `${logs.length} slips`;
+    return logs.length === 0 ? "🔥 Untouchable" : `${logs.length} distractions logged`;
   }, [logs]);
+
+  const analytics = useMemo(() => {
+  if (logs.length === 0) return { topActivity: "None", focusScore: 100 };
+
+  // 1. Calculate Top Distraction
+  const counts = {};
+    logs.forEach(log => {
+      const act = log.activity.toLowerCase().trim();
+      counts[act] = (counts[act] || 0) + 1;
+    });
+    
+    const top = Object.entries(counts).reduce((a, b) => (b[1] > a[1] ? b : a), ["None", 0]);
+
+    // 2. Calculate Focus Score (Starts at 100, drops 10 points per distraction)
+    const score = Math.max(0, 100 - (logs.length * 10));
+
+    return { topActivity: top[0], focusScore: score };
+  }, [logs]);
+
   // All function to use in Counter
   const handleClick = () => {
     if (!formData.activity.trim() || formData.reason.length < 15) return;
@@ -41,16 +60,21 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
   };
 
   const deleteList = (id) => {
-    setLogs((prevLogs) => prevLogs.filter((list) => list.id !== id));
+    const isConfirmed = window.confirm("Are you sure you want to erase this distraction? Only do this if it was a mistake.");
+    
+    if (isConfirmed) {
+      setLogs((prevLogs) => prevLogs.filter((list) => list.id !== id));
+      toast.success("Entry removed from current session.");
+    }
   };
-
 
   const stateMessage = () => {
     const count = logs.length;
-    if (count === 0) return { text: "Clean Slate. Don't screw it up, Stay focused", color: "green" };
-    if (count <= 3) return { text: "First the cracks, then the collapse. Focus.", color: "#FFA500" };
-    if (count <= 5) return { text: "You’re drifting. Let’s refocus.", color: "#ff4d4d" };
-    return { text: "System Failure. You've lost the right to log more distractions. Go touch grass.", color: "red" };
+    if (count === 0) return { text: "Clean Slate. Don't screw it up, Stay focused.", color: "green" };
+    if (count <= 3) return { text: "A few cracks in the armor. Stop now before you spiral.", color: "#FFA500" };
+    if (count <= 5) return { text: "You're drifting into 'Loser' territory. Wake up.", color: "#ff4d4d" };
+    if (count <= 9) return { text: "Disaster. You're basically working for your distractions now.", color: "#ef4444" };
+    return { text: "Total Failure. Step away from the screen. You've lost.", color: "#7f1d1d" };
   };
 
   const status = stateMessage();
@@ -134,17 +158,14 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
   }, [logs, lastSync]);
 
   useEffect(() => {
-    if (logs.length > 0) {
-      document.title = `${logs.length} - Focus Sahil!`;
+    const heartbeat = setInterval(() => {
+      if (logs.length > 0 && navigator.onLine) {
+        syncData(); // Silent sync every 5 minutes
+        console.log("Background heartbeat sync executed.");
+      }
+    }, 5 * 60 * 1000); // 5 Minutes
 
-      const timer = setTimeout(() => {
-        syncData();
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    } else {
-      document.title = "All Clear!";
-    }
+    return () => clearInterval(heartbeat);
   }, [logs]);
 
   useEffect(() => {
@@ -169,37 +190,69 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
     const lastOpenDate = localStorage.getItem("lastOpenDate");
     const today = new Date().toISOString().split("T")[0];
 
-    if(lastOpenDate !== today) {
-      setLogs([]);
-      localStorage.setItem("myDistraction", JSON.stringify([]));
-      localStorage.setItem("lastOpenDate", today);
-      toast.info("New day detected! Local logs reset.");
+    if (lastOpenDate && lastOpenDate !== today) {
+      // FORCE SYNC before clearing
+      const finalizeYesterday = async () => {
+        if (logs.length > 0) {
+          await syncData(); // Push to DB
+          const archiveTime = new Date().toLocaleString();
+          setLastSync(archiveTime); // Show the final archive time
+          localStorage.setItem("syncTime", JSON.stringify(archiveTime));
+        }
+        setLogs([]);
+        localStorage.setItem("myDistraction", JSON.stringify([]));
+        localStorage.setItem("lastOpenDate", today);
+      };
+
+      finalizeYesterday();
     }
-  }, [])
+  }, []);
 
 
   return (
     <>
-      <div
-        className={`App ${logs.length > 5 ? "danger-bg" : ""}`}
-      >
-        <span className={isOnline ? "status online" : "status offline"}>
-          {isOnline ? "Connected" : "Offline"}
-        </span>
+      <div className={`App ${logs.length > 5 ? "danger-bg" : ""}`}>
+        <div className="card-header-row">
+          <span className={isOnline ? "status online" : "status offline"}>
+            {isOnline ? "Connected" : "Offline"}
+          </span>
+          <span className="streak-badge">{streak}</span>
+        </div>
+
         <h1>Distraction Counter </h1>
+
+        <div className="stats-grid">
+          <div className="stat-item">
+            <span className="stat-label">Focus Leaks Today</span>
+            <span className="stat-value" style={{ 
+              color: analytics.focusScore > 70 ? "#22c55e" : analytics.focusScore > 40 ? "#f59e0b" : "#ef4444" 
+            }}>
+              {analytics.focusScore}%
+            </span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-label">Primary Friction</span>
+            <span className="stat-value" style={{ textTransform: 'capitalize' }}>
+              <code>{analytics.topActivity}</code> 
+            </span>
+          </div>
+        </div>
+
+        <p className="score-commentary" style={{ color: status.color }}>
+          {status.text}
+        </p>
         {/* ... Progress Bar, Inputs, and Sync Buttons ... */}
         <div className="progress-container">
           <div
             className="progress-bar"
             style={{
-              width: `${Math.min(logs.length * 10, 100)}%`,
-              backgroundColor: status.color,
+              width: `${analytics.focusScore}%`, // Now shows remaining "Health"
+              backgroundColor: analytics.focusScore > 70 ? "#22c55e" : analytics.focusScore > 40 ? "#f59e0b" : "#ef4444",
+              transition: "width 1s ease-in-out, background-color 0.5s ease"
             }}
           ></div>
         </div>
-        <h2>Total wasted count: {logs.length}</h2>
-        <h3 style={{ color: status.color }}>{status.text}</h3>
-        <h4>{streak}</h4>
+        
         <input
           type="text"
           name="activity"
@@ -207,37 +260,35 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
           onChange={handleChange}
           placeholder="Activity"
         />{" "}
-        <br /> <br />
         <input
           type="text"
           name="reason"
           value={formData.reason}
           onChange={handleChange}
-          placeholder="Reason..."
+          placeholder="Reason (min. 15 chars)..."
+          className={formData.reason.length > 0 && formData.reason.length < 15 ? "input-error" : ""}
         />
-        <p style={{ color: formData.reason.length < 15 ? "red" : "green" }}>
-  {formData.reason.length < 15
-    ? "Minimum 15 characters required"
-    : "Looks good 👍"}
-</p>
+
+        <p className="char-count" style={{ color: formData.reason.length < 15 ? "#ff4d4d" : "#22c55e" }}>
+          {formData.reason.length}/15 characters {formData.reason.length < 15 ? "required" : "reached"}
+        </p>
+
         <button
           onClick={handleClick}
-          disabled={
-            formData.activity.trim() === "" || formData.reason.length < 15 || logs.length >= 10
-          }
+          disabled={formData.activity.trim() === "" || formData.reason.length < 15 || logs.length >= 10}
           className="btn-main"
         >
-          I Wasted Time
+          Log Distraction 🛑
         </button>{" "}
         {/* <br />
         <br /> */}
 
           <div className="sync-section">
-            <button onClick={syncData} disabled={isSyncing || logs.length === 0} className="btn-sync-small">
-              {isSyncing === true ? "Syncing..." : "Sync to Cloud ☁️"}
+            <button onClick={syncData} disabled={isSyncing || logs.length === 0} className="btn-sync-small" style={{ minWidth: '180px' }}>
+              {isSyncing ? <span className="sync-loader">Syncing...</span> : "Backup Session 🛰️"}
             </button>
 
-            <p className="sync-text-mini">Last Synced: {lastSync || "Never"}</p>
+            <p className="sync-text-mini">{lastSync ? `Last Backup: ${lastSync}` : "⚠️ Session not backed up"}</p>
 
           </div>
         
@@ -245,18 +296,18 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
         {logs.length === 0 ? (
           <p className="empty-msg">No distractions yet. Stay focused 💪</p>
         ) : (
-          <ol>
-          {logs.map((list) => (
-            <li key={list.id}>
-              <i>
-                <b>{list.activity?.toUpperCase()}</b>: "{list.reason}"
-              </i>{" "}
-              <br />
-              Time: {list.time}
-              <button onClick={() => deleteList(list.id)}>X</button>
-            </li>
-          ))}
-        </ol>
+          <ol className="log-list">
+            {logs.map((list) => (
+              <li key={list.id}>
+                <div className="log-content">
+                  <i><b>{list.activity?.toUpperCase()}</b>: "{list.reason}"</i>
+                  <br />
+                  <span className="log-time">{list.time}</span>
+                </div>
+                <button onClick={() => deleteList(list.id)}>X</button>
+              </li>
+            ))}
+          </ol>
         )}
       </div>
     </>
