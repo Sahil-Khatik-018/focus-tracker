@@ -1,7 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar({ user, onLogout, onReset, onExport }) {
   const [showMenu, setShowMenu] = useState(false);
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+  const closeMenu = (e) => {
+    if (!e.target.closest(".menu-container")) {
+      setIsMenuOpen(false); 
+    }
+  };
+  
+  if (isMenuOpen) {
+    document.addEventListener("mousedown", closeMenu);
+  }
+
+  return () => document.removeEventListener("mousedown", closeMenu);
+}, [isMenuOpen]);
 
   return (
     <nav className="navbar">
@@ -10,8 +26,8 @@ export default function Navbar({ user, onLogout, onReset, onExport }) {
         <span>Active Session: <strong>{(user?.email?.split('@')[0] || "Explorer").toUpperCase()}</strong></span>
 
         <div className="menu-container">
-          <button onClick={() => setShowMenu(!showMenu)} className="three-dot-btn">⋮</button>
-          {showMenu && (
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="three-dot-btn">⋮</button>
+          {isMenuOpen && (
             <div className="dropdown-menu">
               <button onClick={() => { onExport(); setShowMenu(false); }}>Export JSON 📥</button>
               <button onClick={() => { onReset(); setShowMenu(false); }} className="text-danger">Reset Day ↻</button>

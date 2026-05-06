@@ -65,9 +65,11 @@ export default function App() {
   }, [token]);
 
   const handleLogout = () => {
-    window.location.href = "/";
+    window.location.reload();
+    localStorage.clear()
     localStorage.removeItem("token");
     localStorage.removeItem("myDistraction");
+    localStorage.removeItem("syncTime");
     setToken(null);
     setLogs([]);
     setUser(null);

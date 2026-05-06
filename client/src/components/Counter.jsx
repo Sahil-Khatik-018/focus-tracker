@@ -8,6 +8,9 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
     reason: "",
   });
 
+  const API_BASE = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://focus-tracker-kappa.vercel.app";
 
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -88,11 +91,11 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
 }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/sync`, {
+      const response = await fetch(`${API_BASE}/api/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           logs: logs,
@@ -124,7 +127,8 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
 
   const loadData = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/logs`, {
+      const todayLabel = new Date().toISOString().split("T")[0];
+      const response = await fetch(`${API_BASE}/api/sync`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -135,15 +139,13 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
         window.location.reload();
       }
       
-
-      // Get today's date label
-      const todayLabel = new Date().toISOString().split("T")[0];
-
       // Find the specific object for today
       const todayData = allDays.find((day) => day.date === todayLabel);
 
       if (todayData) {
         setLogs(todayData.logs); // Now logs gets the ARRAY of distractions, not the whole day
+      } else {
+        setLogs([]); // Ensure it's empty if no data for today exists yet
       }
 
     } catch (err) {
@@ -171,6 +173,7 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
   useEffect(() => {
     if (token) loadData();
   }, [token]);
+  
 
    useEffect(() => {
     const handleStatus = () => setIsOnline(navigator.onLine);
