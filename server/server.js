@@ -11,7 +11,10 @@ const app = express();
 const PORT = process.env.PORT;
 
 // 1. The Security Guard (CORS) - Allows React to talk to Node
-app.use(cors({origin: ["http://localhost:5173", "https://focus-tracker-kappa.vercel.app"]}));
+app.use(cors({
+  origin: ["http://localhost:5173", "https://focus-tracker-kappa.vercel.app"],
+  credentials: true
+}));
 app.use(express.json()); // Allows Node to read JSON data
 
 // 2. Database Connection
@@ -25,7 +28,7 @@ mongoose
 // 3. The Blueprint (The Notebook Page)
 const dailySummarySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  date: { type: String, required: true, unique: true },
+  date: { type: String, required: true },
   logs: { type: Array, default: [] },
   totalCount: { type: Number, default: 0 },
 });
@@ -39,25 +42,6 @@ const userSchema = new mongoose.Schema({
 const DailySummary = mongoose.model("DailySummary", dailySummarySchema);
 const User = mongoose.model("User", userSchema);
 
-// 4. THE MAIN SYNC ROUTE (The "Upsert")
-// app.post("/api/sync", auth, async (req, res) => {
-//   const dateId = new Date().toISOString().split("T")[0]; // "2026-04-07"
-//   const { logs, totalCount } = req.body;
-
-//   try {
-//     const updatedDay = await DailySummary.findOneAndUpdate(
-//       { date: dateId }, // Look for today's page
-//       { $set: { date: dateId, logs, totalCount } }, // Save the data
-//       { upsert: true, new: true }, // If not found, create it
-//     );
-//     console.log("SAVED TO DB:", updatedDay);
-//     res.status(200).json({ message: "Update successfully!" });
-//   } catch (err) {
-//     console.log("DB ERROR:", err.message);
-//     res.status(500).json({ message: "Update Failed!" });
-//   }
-// });
-
 // Middleware (The Guard)
 app.post("/api/sync", auth, async (req, res) => {
   const { logs, totalCount } = req.body;
@@ -67,12 +51,13 @@ app.post("/api/sync", auth, async (req, res) => {
     const updatedDay = await DailySummary.findOneAndUpdate(
       {date: new Date().toISOString().split("T")[0], userId: userId},
       {$set: { logs, totalCount, userId }},
-      {upsert: true, new: true}
+      {upsert: true, new: true, runValidators: true}
     );
 
     res.status(200).json({message: "Synced to your personal account!"});
   }catch(err) {
-    res.status(500).json({message: "Sync Failed"});
+    console.error("SYNC ERROR:", err);
+    res.status(500).json({message: "Sync Failed", error: err.message});
   }
 })
 

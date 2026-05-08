@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate} from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import "./App.css";
 
@@ -19,10 +19,14 @@ export default function App() {
     return savedLogs ? JSON.parse(savedLogs) : [];
   });
 
+  const API_BASE = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://focus-tracker-e20q.onrender.com";
+
 
   const fetchHistory = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/logs`, {
+      const response = await fetch(`${API_BASE}/api/logs`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -57,15 +61,11 @@ export default function App() {
 };
 
   useEffect(() => {
-    fetchHistory();
-  }, []);
-
-  useEffect(() => {
     fetchUser();
+    if(token) fetchHistory();
   }, [token]);
 
   const handleLogout = () => {
-    window.location.reload();
     localStorage.clear()
     localStorage.removeItem("token");
     localStorage.removeItem("myDistraction");
@@ -73,6 +73,7 @@ export default function App() {
     setToken(null);
     setLogs([]);
     setUser(null);
+    window.location.href = "/";
   };
 
   const handleReset = () => {
@@ -121,23 +122,19 @@ export default function App() {
       <Toaster position="top-right" />
       
       <Routes>
-        {/* 1. Public Landing Page */}
         <Route path="/" element={<Landing />} />
-
-        {/* 2. Login Page: If already logged in, skip to dashboard */}
         <Route 
           path="/login" 
           element={!token ? <Auth setToken={setToken} /> : <Navigate to="/dashboard" />} 
         />
-
-        {/* 3. The Private Dashboard: If NO token, kick them back to login */}
+        <Route path="/signup" element={!token ? <Auth setToken={setToken} /> : <Navigate to="/dashboard" />} />
         <Route 
           path="/dashboard" 
           element={
             token ? (
               <>
-                <Navbar user={user} onLogout={handleLogout} onReset={handleReset} onExport={handleExport}/>
-                <Counter token={token} logs={logs} setLogs={setLogs} refreshHistory={fetchHistory}/>
+                <Navbar user={user} token={token} onLogout={handleLogout} onReset={handleReset} onExport={handleExport}/>
+                <Counter user={user} token={token} logs={logs} setLogs={setLogs} refreshHistory={fetchHistory}/>
                 <History data={history} onDelete={handleDeleteHistory}/>
               </>
             ) : (
@@ -145,9 +142,6 @@ export default function App() {
             )
           } 
         />
-
-        {/* 4. Catch-all: Send any weird URL to the Landing page */}
-        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
   </Router>

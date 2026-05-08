@@ -57,56 +57,20 @@ body, html, #root, .MainContainer {
 
 /* ===== CARD ===== */
 .App {
-  width: 95%;
+  width: 96%;
   max-width: 550px;
-  padding: 3rem 2.5rem;
+  padding: 2rem 1.5rem;
   background: var(--card-bg);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border);
-  border-radius: 32px;
+  border-radius: 24px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
   text-align: center;
-  margin-top: 1rem;
+  margin: 10px auto;
 }
 
 .App:hover {
   transform: translateY(-4px);
-}
-
-/* ===== STATUS ===== */
-.status {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.online { background: #dcfce7; color: #166534; }
-.offline { background: #fee2e2; color: #991b1b; }
-
-.status.online {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.status.online::before {
-  content: "";
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #22c55e;
-  border-radius: 50%;
-  margin-right: 8px;
-  box-shadow: 0 0 10px #22c55e;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(0.95); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
 }
 
 /* ===== PROGRESS ===== */
@@ -129,7 +93,8 @@ body, html, #root, .MainContainer {
 input {
   width: 100%; /* Change from 90% to 100% */
   max-width: 450px; /* Limits size on big screens */
-  padding: 14px;
+  font-size: 16px !important; /* Prevents auto-zoom on iOS/Android */
+  padding: 12px !important;
   margin: 10px 0;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -171,8 +136,9 @@ button:disabled {
   width: 100%; /* Matches the input width */
   max-width: 450px; /* Matches the input max-width */
   margin: 20px auto 10px; /* Centers the button and adds gap */
-  padding: 16px; /* Slightly taller for more "Action" feel */
+  padding: 14px; /* Slightly taller for more "Action" feel */
   display: block;
+  font-size: 1.1rem;
 }
 
 /* SECONDARY */
@@ -290,8 +256,9 @@ li i {
 
 .history-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  padding: 0 0.5rem;
 }
 
 .history-card, .counter-container {
@@ -487,13 +454,37 @@ li i {
   opacity: 0.8;
 }
 
-/* ===== MOBILE ===== */
-@media (max-width: 600px) {
-  .history-grid { grid-template-columns: 1fr; }
+.danger-bg {
+  background: linear-gradient(135deg, #1a0505 0%, #0a0a0c 100%) !important;
+  border: 1px solid rgba(239, 68, 68, 0.4) !important;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.15), inset 0 0 20px rgba(239, 68, 68, 0.1) !important;
+  transition: all 0.5s ease-in-out;
 }
 
-.danger-bg {
-  background: #ffe6e6 !important;
+/* Ensure inputs remain readable during Danger Mode */
+.danger-bg input {
+  background: rgba(255, 0, 0, 0.05) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+  color: #ffffff !important; /* Forces text to stay white */
+}
+
+.danger-bg h1 {
+  color: #ef4444 !important;
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+@keyframes system-shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  20% { transform: translate(-3px, 0px) rotate(-1deg); }
+  40% { transform: translate(3px, 2px) rotate(1deg); }
+  60% { transform: translate(-1px, -1px) rotate(1deg); }
+  80% { transform: translate(-3px, 1px) rotate(-1deg); }
+  100% { transform: translate(1px, -2px) rotate(0deg); }
+}
+
+.failure-mode {
+  animation: system-shake 0.5s infinite;
+  border: 2px solid var(--danger) !important;
 }
 
 .landing-page {
@@ -532,6 +523,7 @@ li i {
   font-weight: 800; 
   color: white; 
   text-decoration: none; 
+  cursor: pointer;
 }
 .logo span { 
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
@@ -773,8 +765,8 @@ li i {
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  margin: 25px 0;
+  gap: 12px;
+  margin: 20px 0;
   text-align: left;
 }
 
@@ -826,11 +818,349 @@ li i {
   to { transform: rotate(360deg); }
 }
 
-.score-commentary {
+
+.command-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid var(--accent-blue); /* Professional accent stripe */
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 35px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.hud-left, .hud-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Rank Indicator with Pulse */
+.rank-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot-pulse {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--success);
+  animation: hud-pulse 2s infinite;
+}
+
+.rank-text {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--success);
+  letter-spacing: 1px;
+}
+
+/* Technical Dividers */
+.divider-line {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.calendar-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* Clock Styling */
+.clock-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.digital-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes hud-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.command-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 18px;
+  margin-bottom: 30px;
+}
+
+.connection-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The Pulse Logic */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.online-pulse {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+  animation: pulse-glow 2s infinite;
+}
+
+.offline-pulse {
+  background: var(--danger);
+}
+
+.status-text {
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+.streak-mini {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+@keyframes pulse-glow {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.back-home-btn {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  color: var(--text-dim);
+  text-decoration: none;
   font-size: 0.9rem;
   font-weight: 600;
-  margin-top: -10px; /* Pulls it closer to the grid */
-  margin-bottom: 20px;
-  font-style: italic;
-  opacity: 0.9;
+  transition: 0.3s;
+}
+
+.back-home-btn:hover {
+  color: white;
+  transform: translateX(-5px); /* Subtle slide effect */
+}
+
+/* Ensure the auth-page can position the button */
+.auth-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* ===== MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+  /* 1. Navbar: Stack logo and buttons */
+  .glass-nav, .navbar {
+    width: 98% !important;
+    margin: 5px auto !important;
+    padding: 0.8rem 1rem !important;
+    border-radius: 10px !important;
+    top: 5px !important;
+  }
+
+  .logo {
+    font-size: 1.3rem !important;
+  }
+
+  .nav-links {
+    gap: 12px !important;
+  }
+
+  .nav-item {
+    font-size: 0.8rem !important;
+  }
+
+  .btn-signup {
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .command-hud {
+    flex-direction: column !important; /* Stack ID and Time to prevent squashing */
+    gap: 8px !important;
+    padding: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  .hud-right {
+    width: 100%;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 8px;
+  }
+
+  /* 2. Hero: Scale down typography */
+  .hero-section {
+    padding: 80px 5% 40px;
+  }
+
+  .hero-section h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+
+  .hero-section p {
+    font-size: 1rem;
+    padding: 0 10px;
+  }
+
+  /* 3. Features: 2-Column Small Grid */
+  .feature-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 40px 5%;
+  }
+
+  .f-card {
+    padding: 20px;
+  }
+
+  .f-card .icon {
+    font-size: 2rem;
+    margin-bottom: 15px;
+  }
+
+  .f-card h3 {
+    font-size: 1.1rem;
+  }
+
+  /* 4. Footer: Vertical Stack */
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .social-links {
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* 5. Auth: Remove absolute positioning for Back Button on small screens */
+  .back-home-btn {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .App {
+    padding: 1.5rem 1rem; /* Maximum space for content */
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr; /* Stack stats vertically on tiny phones */
+  }
+
+  .command-hud {
+    padding: 10px 12px !important;
+    font-size: 0.8rem;
+  }
+
+  .digital-time {
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .history-grid {
+    grid-template-columns: 1fr 1fr; /* Two cards per row on mobile */
+  }
+  
+  .history-card {
+    padding: 1rem;
+  }
+  
+  .card-header strong {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .hide-mobile { display: none; }
+  .navbar { padding: 0.8rem 1rem; }
+}
+
+@media (max-width: 600px) {
+  /* 1. Center the entire page for mobile */
+  .auth-page {
+    padding: 20px;
+    justify-content: flex-start; /* Move up slightly to account for keyboard */
+    padding-top: 80px; 
+  }
+
+  /* 2. Make the card wider and less padded */
+  .auth-card {
+    width: 100%;
+    max-width: 100% !important;
+    padding: 2rem 1.5rem !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* 3. Scale down the typography */
+  .auth-card h2 {
+    font-size: 1.6rem !important;
+    letter-spacing: -0.5px !important;
+  }
+
+  .auth-card p {
+    font-size: 0.85rem !important;
+    margin-bottom: 20px !important;
+  }
+
+  /* 4. Fix the Back Button for mobile thumbs */
+  .back-home-btn {
+    position: relative !important; /* No longer floating */
+    top: 0 !important;
+    left: 0 !important;
+    margin-bottom: 25px;
+    align-self: flex-start; /* Aligns to left above the card */
+    font-size: 0.85rem !important;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* 5. Adjust Button Width */
+  .btn-auth {
+    width: 100% !important; /* Full width button for easier tapping */
+    padding: 16px !important;
+  }
 }

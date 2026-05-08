@@ -1,17 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import {Link, useLocation} from "react-router-dom";
 
 export default function Auth({ setToken }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoginView, setIsLoginView] = useState(true);
+  const location = useLocation();
 
+  const API_BASE = window.location.hostname === "localhost" 
+  ? "http://localhost:5000" 
+  : "https://focus-tracker-e20q.onrender.com";
 
   const handleAuth = async () => {
     const endpoint = isLoginView ? "login" : "signup";
 
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/${endpoint}`, {
+      const response = await fetch(`${API_BASE}/api/auth/${endpoint}`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ email, password }),
@@ -31,10 +36,19 @@ export default function Auth({ setToken }) {
     }
   };
 
+  useEffect(() => {
+    if(location.pathname === "/signup") {
+      setIsLoginView(false);
+    } else {
+      setIsLoginView(true);
+    }
+  }, [location.pathname])
+
   return (
     <div className="auth-page">
+      <Link to="/" className="back-home-btn">← Back to Home</Link>
+      
       <div className="auth-card">
-        {/* Header Section */}
         <div className="auth-header">
           <h2>{isLoginView ? "Welcome Back" : "Join the Elite"}</h2>
           <p>{isLoginView ? "Enter your credentials to access your dashboard." : "Start tracking your distractions today."}</p>

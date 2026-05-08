@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 
-export default function Counter({ token, logs, setLogs, refreshHistory }) {
+export default function Counter({ user, token, logs, setLogs, refreshHistory }) {
   // All States use for Counter
   const [formData, setFormData] = useState({
     activity: "",
@@ -10,7 +10,9 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
 
   const API_BASE = window.location.hostname === "localhost" 
   ? "http://localhost:5000" 
-  : "https://focus-tracker-kappa.vercel.app";
+  : "https://focus-tracker-e20q.onrender.com";
+
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -87,15 +89,15 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
 
     if (!navigator.onLine) {
       toast.error("You're offline");
-    return;
-}
+      return;
+    }
 
     try {
       const response = await fetch(`${API_BASE}/api/sync`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('token')}`,
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           logs: logs,
@@ -128,7 +130,7 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
   const loadData = async () => {
     try {
       const todayLabel = new Date().toISOString().split("T")[0];
-      const response = await fetch(`${API_BASE}/api/sync`, {
+      const response = await fetch(`${API_BASE}/api/logs`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -153,7 +155,6 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
     }
   };
 
-  // useEffect
   useEffect(() => {
     localStorage.setItem("myDistraction", JSON.stringify(logs));
     localStorage.setItem("syncTime", JSON.stringify(lastSync));
@@ -211,16 +212,43 @@ export default function Counter({ token, logs, setLogs, refreshHistory }) {
     }
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second
+
+    return () => clearInterval(timer); // Cleanup on unmount
+  }, []);
+
 
   return (
     <>
-      <div className={`App ${logs.length > 5 ? "danger-bg" : ""}`}>
-        <div className="card-header-row">
-          <span className={isOnline ? "status online" : "status offline"}>
-            {isOnline ? "Connected" : "Offline"}
-          </span>
-          <span className="streak-badge">{streak}</span>
-        </div>
+      <div className={`App ${logs.length >= 10 ? "danger-bg failure-mode" : logs.length > 5 ? "danger-bg" : ""}`}>
+        <div className="command-hud">
+          <div className="hud-left">
+            <div className="connection-pill">
+              <span className={isOnline ? "dot online-pulse" : "dot offline-pulse"}></span>
+              <span className="status-text">{isOnline ? "CONNECTED" : "OFFLINE"}</span>
+            </div>
+          </div>
+          
+          <div className="hud-right">
+            <div className="divider-line"></div>
+            <span className="calendar-tag">
+              {currentTime.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }).toUpperCase()}
+            </span>
+            <div className="divider-line"></div>
+            <code className="digital-time">
+              {currentTime.toLocaleTimeString([], { hour12: true })}
+            </code>
+            <div className="divider-line"></div>
+            <div className="streak-mini">
+              <span className="streak-icon">🔥</span>
+              <span className="streak-val">{logs.length}</span>
+            </div>
+          </div>
+          </div>
+        
 
         <h1>Distraction Counter </h1>
 
