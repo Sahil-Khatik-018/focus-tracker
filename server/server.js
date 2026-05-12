@@ -15,6 +15,7 @@ app.use(cors({
   origin: "https://focus-tracker-kappa.vercel.app",
   credentials: true
 }));
+
 app.use(express.json()); // Allows Node to read JSON data
 
 // 2. Database Connection
