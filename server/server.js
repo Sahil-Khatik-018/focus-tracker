@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors({
   origin: [
     "https://focus-tracker-kappa.vercel.app",
-    "https://focus-tracker-six.vercel.app",
     "https://focus-tracker.vercel.app"
   ],
   credentials: true
@@ -129,7 +128,7 @@ app.post("/api/auth/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, name: user.name },
-      process.env.JWT_SECRET || "SUPER_SECRET_KEY", //This is your private signature
+      process.env.JWT_SECRET, //This is your private signature
       { expiresIn: "1h" }, // The key expire in 1 hours / 1d - 24hr
     );
 

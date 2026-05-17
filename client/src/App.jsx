@@ -19,9 +19,7 @@ export default function App() {
     return savedLogs ? JSON.parse(savedLogs) : [];
   });
 
-  const API_BASE = window.location.hostname.includes("localhost")
-  ? "http://localhost:5000" 
-  : "https://focus-tracker-e20q.onrender.com";
+  const API_BASE = "https://focus-tracker-e20q.onrender.com";
 
 
   const fetchHistory = async () => {
