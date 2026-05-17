@@ -8,7 +8,7 @@ export default function Auth({ setToken }) {
   const [isLoginView, setIsLoginView] = useState(true);
   const location = useLocation();
 
-  const API_BASE = window.location.hostname === "localhost" 
+  const API_BASE = window.location.hostname.includes("localhost") 
   ? "http://localhost:5000" 
   : "https://focus-tracker-e20q.onrender.com";
 

@@ -8,7 +8,7 @@ export default function Counter({ user, token, logs, setLogs, refreshHistory }) 
     reason: "",
   });
 
-  const API_BASE = window.location.hostname === "localhost" 
+  const API_BASE = window.location.hostname.includes("localhost") 
   ? "http://localhost:5000" 
   : "https://focus-tracker-e20q.onrender.com";
 

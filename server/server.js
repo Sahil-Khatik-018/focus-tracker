@@ -8,18 +8,22 @@ const jwt = require("jsonwebtoken");
 const auth = require("./middleware/auth")
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // 1. The Security Guard (CORS) - Allows React to talk to Node
 app.use(cors({
-  origin: "https://focus-tracker-kappa.vercel.app",
+  origin: [
+    "https://focus-tracker-kappa.vercel.app",
+    "https://focus-tracker-six.vercel.app",
+    "https://focus-tracker.vercel.app"
+  ],
   credentials: true
 }));
 
-app.use(express.json()); // Allows Node to read JSON data
+app.use(express.json()); // Allows Node to read JSON data5
 
 // 2. Database Connection
-const mongoURI = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@cluster0.tmnvx7v.mongodb.net/?appName=Cluster0`;
+const mongoURI = process.env.MONGODB_URI
 
 mongoose
   .connect(mongoURI)
