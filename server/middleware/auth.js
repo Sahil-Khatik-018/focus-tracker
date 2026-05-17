@@ -9,7 +9,7 @@ const auth = (req, res, next) => {
 
   try {
     // 2. verify the token
-    const decode = jwt.verify(token, process.env.JWT_SECRET || "SUPER_SECRET_KEY");
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
     // Example: decoded = { id: "101", name: "Sahil" }
 
     // 3. Put User id in request object to use in future
