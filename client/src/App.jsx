@@ -42,7 +42,7 @@ export default function App() {
   const fetchUser = async () => {
   if (!token) return;
   try {
-    const res = await fetch(`http://localhost:5000/api/load`, {
+    const res = await fetch(`${API_BASE}/api/load`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -97,7 +97,7 @@ export default function App() {
     if(!window.confirm("Brutal Check: Delete this day forever?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/logs/${id}`, {
+      const res = await fetch(`${API_BASE}/api/logs/${id}`, {
         method: "DELETE",
         headers: { 
         "Content-Type": "application/json",

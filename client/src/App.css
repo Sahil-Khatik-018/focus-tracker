@@ -819,21 +819,6 @@ li i {
 }
 
 
-.command-hud {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-left: 4px solid var(--accent-blue); /* Professional accent stripe */
-  border-radius: 12px;
-  padding: 12px 20px;
-  margin-bottom: 35px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
-              inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
-
 .hud-left, .hud-right {
   display: flex;
   align-items: center;
@@ -902,11 +887,15 @@ li i {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid var(--accent-blue); /* Professional accent stripe */
   border-radius: 12px;
-  padding: 10px 18px;
-  margin-bottom: 30px;
+  padding: 12px 20px;
+  margin-bottom: 35px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+              inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .connection-pill {
@@ -1097,20 +1086,6 @@ li i {
   }
 }
 
-@media (max-width: 600px) {
-  .history-grid {
-    grid-template-columns: 1fr 1fr; /* Two cards per row on mobile */
-  }
-  
-  .history-card {
-    padding: 1rem;
-  }
-  
-  .card-header strong {
-    font-size: 0.9rem;
-  }
-}
-
 @media (max-width: 500px) {
   .hide-mobile { display: none; }
   .navbar { padding: 0.8rem 1rem; }
@@ -1162,5 +1137,17 @@ li i {
   .btn-auth {
     width: 100% !important; /* Full width button for easier tapping */
     padding: 16px !important;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr 1fr; /* Two cards per row on mobile */
+  }
+  
+  .history-card {
+    padding: 1rem;
+  }
+  
+  .card-header strong {
+    font-size: 0.9rem;
   }
 }

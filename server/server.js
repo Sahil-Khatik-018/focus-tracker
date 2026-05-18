@@ -12,11 +12,10 @@ const PORT = process.env.PORT || 5000;
 
 // 1. The Security Guard (CORS) - Allows React to talk to Node
 app.use(cors({
-  origin: [
-    "https://focus-tracker-kappa.vercel.app",
-    "https://focus-tracker.vercel.app"
-  ],
-  credentials: true
+  origin: "https://focus-tracker-kappa.vercel.app",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json()); // Allows Node to read JSON data5
